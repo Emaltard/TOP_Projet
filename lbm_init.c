@@ -49,7 +49,8 @@ void setup_init_state_circle_obstacle(Mesh * mesh, lbm_mesh_type_t * mesh_type, 
 			{
 
 				*( lbm_cell_type_t_get_cell( mesh_type, i - mesh_comm->x, j - mesh_comm->y) ) = CELL_BOUNCE_BACK;
-				*( lbm_cell_type_t_get_cell( mesh_type, i + 200 - mesh_comm->x, j - mesh_comm->y) ) = CELL_BOUNCE_BACK;
+				// *( lbm_cell_type_t_get_cell( mesh_type, i + 200 - mesh_comm->x, j - mesh_comm->y) ) = CELL_BOUNCE_BACK;
+				// *( lbm_cell_type_t_get_cell( mesh_type, i + 400 - mesh_comm->x, j - mesh_comm->y) ) = CELL_BOUNCE_BACK;
 				// for (int k = 0; k < DIMENSIONS; k++)
 				//      Mesh_get_cell(mesh, i, j)[k] = 0.0;
 			}

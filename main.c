@@ -164,12 +164,18 @@ int main(int argc, char * argv[])
 	//barrier to wait all before start
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	double start_time, end_time, total_time;
+	total_time = 0.f;
+
 	//time steps
 	for ( i = 1; i < ITERATIONS; i++ )
 	{
 		//print progress
-		if( rank == RANK_MASTER )
+		if( rank == RANK_MASTER ) {
 			printf("Progress [%5d / %5d]\n",i,ITERATIONS);
+			start_time = MPI_Wtime();
+		}
+
 
 		//compute special actions (border, obstacle...)
 		special_cells( &mesh, &mesh_type, &mesh_comm);
@@ -191,6 +197,11 @@ int main(int argc, char * argv[])
 		//need to wait all before doing next step
 		MPI_Barrier(MPI_COMM_WORLD);
 
+		if(rank == RANK_MASTER) {
+			end_time = MPI_Wtime();
+			total_time += end_time - start_time;
+		}
+
 		//save step
 		if ( i % WRITE_STEP_INTERVAL == 0 && lbm_gbl_config.output_filename != NULL )
 			save_frame_all_domain(fp, &mesh, &temp_render );
@@ -201,6 +212,8 @@ int main(int argc, char * argv[])
 	if( rank == RANK_MASTER && fp != NULL)
 	{
 		close_file(fp);
+		printf("Total time: %lfs\n", total_time);
+		printf("Average time per iterations: %lfs\n", total_time/ITERATIONS);
 	}
 
 	//free memory

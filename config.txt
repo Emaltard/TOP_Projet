@@ -1,10 +1,10 @@
-iterations           = 2000
+iterations           = 12000
 width                = 800
 height               = 160
 obstacle_r           = 30
 obstacle_x           = 100
 obstacle_y           = 80
-reynolds             = 100
+reynolds             = 5000
 inflow_max_velocity  = 0.140000
 output_filename      = resultat.raw
-write_interval       = 20
+write_interval       = 50
