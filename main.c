@@ -139,8 +139,8 @@ int main(int argc, char * argv[])
 
 	//load config file and display it on master node
 	load_config(config_filename);
-	if (rank == RANK_MASTER)
-		print_config();
+	// if (rank == RANK_MASTER)
+	// 	print_config();
 
 	//init structures, allocate memory...
 	lbm_comm_init( &mesh_comm, rank, comm_size, MESH_WIDTH, MESH_HEIGHT);
@@ -164,15 +164,21 @@ int main(int argc, char * argv[])
 	//barrier to wait all before start
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	double start_time, end_time, total_time;
-	total_time = 0.f;
+	double start_time = 0.0f, end_time =0.0f;
+	double total_time = 0.f;
+	double start_time_collision, end_time_collision;
+	double total_time_collision = 0.f;
+	double start_time_ghost, end_time_ghost;
+	double total_time_ghost = 0.0f;
+	double start_time_propagation, end_time_propagation;
+	double total_time_propagation = 0.0f;
 
 	//time steps
 	for ( i = 1; i < ITERATIONS; i++ )
 	{
 		//print progress
 		if( rank == RANK_MASTER ) {
-			printf("Progress [%5d / %5d]\n",i,ITERATIONS);
+			//printf("Progress [%5d / %5d]\n",i,ITERATIONS);
 			start_time = MPI_Wtime();
 		}
 
@@ -183,23 +189,34 @@ int main(int argc, char * argv[])
 		//need to wait all before doing next step
 		MPI_Barrier(MPI_COMM_WORLD);
 
+    start_time_collision = MPI_Wtime();
 		//compute collision term
 		collision( &temp, &mesh);
 
 		//need to wait all before doing next step
 		MPI_Barrier(MPI_COMM_WORLD);
+		end_time_collision = MPI_Wtime();
 
+    start_time_ghost = MPI_Wtime();
 		//propagate values from node to neighboors
 		lbm_comm_ghost_exchange( &mesh_comm, &temp );
 
+		end_time_ghost = MPI_Wtime();
+
+    start_time_propagation = MPI_Wtime();
 		propagation( &mesh, &temp);
 
 		//need to wait all before doing next step
 		MPI_Barrier(MPI_COMM_WORLD);
 
+		end_time_propagation = MPI_Wtime();
+
 		if(rank == RANK_MASTER) {
 			end_time = MPI_Wtime();
 			total_time += end_time - start_time;
+			total_time_collision += end_time_collision - start_time_collision;
+			total_time_ghost += end_time_ghost - start_time_ghost;
+			total_time_propagation += end_time_propagation - start_time_propagation;
 		}
 
 		//save step
@@ -214,6 +231,9 @@ int main(int argc, char * argv[])
 		close_file(fp);
 		printf("Total time: %lfs\n", total_time);
 		printf("Average time per iterations: %lfs\n", total_time/ITERATIONS);
+		printf("Average time in collision per iterations: %lfs\n", total_time_collision/ITERATIONS);
+		printf("Average time in ghost per iterations: %lfs\n", total_time_ghost/ITERATIONS);
+		printf("Average time in propagation per iterations: %lfs\n", total_time_propagation/ITERATIONS);
 	}
 
 	//free memory
